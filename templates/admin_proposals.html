@@ -1,0 +1,21 @@
+{% extends "base.html" %}{% block body %}
+<div class="phead"><div><span class="section-kicker">Review queue</span><h1>Community event proposals</h1></div>
+<a class="btn" href="{{ url_for('admin_dashboard') }}">← Dashboard</a></div>
+{% for p in rows %}<article class="proposal-card admin-proposal">
+<div class="proposal-card-head"><div><span class="badge cat-{{ p.category or 'general' }}">{{ t('cat_' ~ (p.category or 'general')) }}</span>
+<h2>{{ p.title }}</h2><p class="meta">📅 {{ p.date }}{% if p.venue %} · 📍 {{ p.venue }}{% endif %}</p>
+<p class="meta">Submitted by {{ p.name or 'Deleted account' }}{% if p.phone %} · {{ p.phone }}{% endif %} · {{ p.created[:10] }}</p></div>
+<span class="proposal-status {{ p.status }}">{{ p.status|replace('_',' ')|title }}</span></div>
+{% if p.description %}<p class="desc">{{ p.description }}</p>{% endif %}
+{% if p.activities %}<h3>{{ t('event_activities') }}</h3><ul class="activity-list">{% for activity in p.activities.splitlines() %}<li>{{ activity }}</li>{% endfor %}</ul>{% endif %}
+{% if media[p.id] %}<h3>Submitted media</h3><div class="proposal-media">{% for item in media[p.id] %}
+{% if item.media_type=='video' %}<video controls preload="metadata" playsinline><source src="{{ url_for('uploaded', name=item.filename) }}" type="{{ 'video/webm' if item.filename.endswith('.webm') else 'video/mp4' }}"></video>
+{% else %}<a href="{{ url_for('uploaded', name=item.filename) }}" target="_blank" rel="noopener"><img loading="lazy" src="{{ url_for('uploaded', name=item.filename) }}" alt=""></a>{% endif %}
+{% endfor %}</div>{% endif %}
+{% if p.status=='pending' %}<div class="proposal-actions">
+<form method="post" action="{{ url_for('approve_proposal', pid=p.id) }}" data-confirm="Approve this proposal and publish it as an event?"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn primary">✓ Approve & publish</button></form>
+<form method="post" action="{{ url_for('reject_proposal', pid=p.id) }}" data-confirm="Reject this proposal and remove its uploaded media?"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn danger">Decline</button></form>
+</div>{% elif p.event_id %}<a class="btn" href="{{ url_for('event', eid=p.event_id) }}">View published event →</a>{% endif %}
+<form method="post" action="{{ url_for('delete_proposal', pid=p.id) }}" data-confirm="Delete this proposal?"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="link danger">Delete proposal</button></form>
+</article>{% else %}<div class="empty-card"><span>✨</span><p>No event proposals to review.</p></div>{% endfor %}
+{% endblock %}

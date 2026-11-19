@@ -1,0 +1,46 @@
+{% extends "base.html" %}{% block body %}
+<form method="post" class="card narrow event-admin-form"><h2>{{ 'Edit event' if ev else 'Create event' }}</h2><input type="hidden" name="csrf" value="{{ csrf }}">
+<label>Event name<input name="title" maxlength="160" value="{{ request.form.get('title', ev.title if ev else '') }}" required></label>
+<label>Date<input type="date" name="date" value="{{ request.form.get('date', ev.date if ev else '') }}" required></label>
+<label>Venue<input name="venue" maxlength="200" value="{{ request.form.get('venue', ev.venue if ev else '') }}"></label>
+<label>Category<select name="category">{% for c in CATS %}<option value="{{ c }}" {{ 'selected' if request.form.get('category', ev.category if ev else 'general')==c }}>{{ t('cat_' ~ c) }}</option>{% endfor %}</select></label>
+<label>Event details<textarea name="description" rows="5" maxlength="4000">{{ request.form.get('description', ev.description if ev else '') }}</textarea></label>
+{% include "_activities.html" %}
+<fieldset class="donation-editor"><legend>{{ t('donation_support') }}</legend>
+<p class="note">{{ t('donation_admin_hint') }}</p>
+<label>{{ t('donation_message_label') }}<textarea name="donation_message" rows="3" maxlength="500">{{ request.form.get('donation_message', ev.donation_message if ev else '') }}</textarea></label>
+<label>{{ t('donation_qr_label') }}<input type="file" name="donation_qr" accept="image/jpeg,image/png,image/webp"></label>
+<p class="note">{{ t('donation_qr_limit') }}</p>
+{% if ev and ev.donation_qr %}<div class="donation-current"><img src="{{ url_for('uploaded', name=ev.donation_qr) }}" alt="{{ t('donation_qr_alt') }}">
+<label class="chk"><input type="checkbox" name="remove_donation_qr">{{ t('donation_remove_qr') }}</label></div>{% endif %}
+</fieldset>
+<fieldset class="program-editor" data-program-editor><legend>{{ t('program_schedule') }}</legend>
+<p class="note">{{ t('program_hint') }}</p>
+<div class="program-rows" data-program-rows>
+{% for program in program_items %}<div class="program-row" data-program-row>
+<input type="hidden" name="program_id" value="{{ program.id }}">
+<label>{{ t('program_type') }}<select name="program_type">
+<option value="game" {{ 'selected' if program.kind=='game' }}>{{ t('program_game') }}</option>
+<option value="education" {{ 'selected' if program.kind=='education' }}>{{ t('program_education') }}</option>
+<option value="other" {{ 'selected' if program.kind=='other' }}>{{ t('program_other') }}</option>
+</select></label>
+<label>{{ t('program_title') }}<input name="program_title" maxlength="120" value="{{ program.title }}"></label>
+<label>Time<input type="time" name="program_time" value="{{ program.time or '' }}"></label>
+<label>{{ t('program_details') }}<textarea name="program_details" rows="3" maxlength="1000">{{ program.details }}</textarea></label>
+<label>{{ t('program_results') }}<textarea name="program_result" rows="2" maxlength="1000">{{ program.result }}</textarea></label>
+<button type="button" class="link danger" data-remove-program>{{ t('program_remove') }}</button>
+</div>{% endfor %}
+</div>
+<button type="button" class="btn" data-add-program>{{ t('program_add') }}</button>
+</fieldset>
+<template id="program-row-template"><div class="program-row" data-program-row>
+<input type="hidden" name="program_id" value="">
+<label>{{ t('program_type') }}<select name="program_type"><option value="game">{{ t('program_game') }}</option><option value="education">{{ t('program_education') }}</option><option value="other" selected>{{ t('program_other') }}</option></select></label>
+<label>{{ t('program_title') }}<input name="program_title" maxlength="120"></label>
+<label>Time<input type="time" name="program_time"></label>
+<label>{{ t('program_details') }}<textarea name="program_details" rows="3" maxlength="1000"></textarea></label>
+<label>{{ t('program_results') }}<textarea name="program_result" rows="2" maxlength="1000"></textarea></label>
+<button type="button" class="link danger" data-remove-program>{{ t('program_remove') }}</button>
+</div></template>
+<button class="btn primary">Save</button></form>
+{% endblock %}

@@ -1,0 +1,5 @@
+<a class="ecard cat-{{ e.category or 'general' }}" href="{{ url_for('event', eid=e.id) }}">
+{% if e.cover %}<img loading="lazy" src="{{ url_for('thumbnail', name=e.cover) }}" alt="">{% else %}<div class="ph">🎉</div>{% endif %}
+<div class="eb"><span class="badge cat-{{ e.category or 'general' }}">{{ t('cat_' ~ (e.category or 'general')) }}</span>
+<h3>{{ e.title }}</h3><p>📅 {{ e.date }}{% if e.venue %} · 📍 {{ e.venue }}{% endif %}</p>
+{% if e.activities %}<p class="card-activities">🌿 {{ e.activities.splitlines()[:2]|join(' · ') }}</p>{% endif %}</div></a>

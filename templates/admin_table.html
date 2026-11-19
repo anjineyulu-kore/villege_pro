@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block body %}
+<div class="phead"><h1>{{ title }}</h1><span><a class="btn" href="{{ url_for('admin_dashboard') }}">← Dashboard</a>{% if export %} <a class="btn" href="{{ export }}">⬇ Export CSV</a>{% endif %}</span></div>
+{% if tree_form %}<form method="post" class="card"><input type="hidden" name="csrf" value="{{ csrf }}"><div class="row2">
+<label>Date<input type="date" name="date" required></label><label>Place<input name="place"></label><label>Saplings<input type="number" name="qty" min="1" required></label></div>
+<button class="btn primary">Add</button></form>{% endif %}
+<div class="tw"><table><thead><tr>{% for c in cols %}<th>{{ c }}</th>{% endfor %}<th></th></tr></thead><tbody>
+{% for r in rows %}<tr>{% for c in r.cells %}<td>{{ c }}</td>{% endfor %}<td class="act">
+{% for a in r.actions %}<form method="post" action="{{ a.url }}" {% if a.confirm %}data-confirm="{{ a.confirm }}"{% endif %}><input type="hidden" name="csrf" value="{{ csrf }}">
+{% if a.select %}<select name="value">{% for s in a.select %}<option {{ 'selected' if s==a.current }}>{{ s }}</option>{% endfor %}</select>{% endif %}
+<button class="sm {{ 'danger' if a.danger }}">{{ a.label }}</button></form>{% endfor %}</td></tr>
+{% else %}<tr><td colspan="{{ cols|length + 1 }}" class="empty">Nothing here yet.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

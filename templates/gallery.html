@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}{{ s('photos_videos') }} · {{ org }}{% endblock %}
+{% block body %}
+<header class="page-heading">
+  <p class="eyebrow">{{ s('gallery_eyebrow') }}</p>
+  <h1>{{ s('photos_videos') }}</h1>
+</header>
+
+<nav class="gallery-tabs" aria-label="{{ s('media_type') }}">
+  <a class="{{ 'selected' if kind=='photo' else '' }}" href="{{ url_for('gallery', kind='photo', event=selected_event_id) if selected_event_id else url_for('gallery', kind='photo') }}" {% if kind=='photo' %}aria-current="page"{% endif %}>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+    <span>{{ s('photos') }}</span>
+  </a>
+  <a class="{{ 'selected' if kind=='video' else '' }}" href="{{ url_for('gallery', kind='video', event=selected_event_id) if selected_event_id else url_for('gallery', kind='video') }}" {% if kind=='video' %}aria-current="page"{% endif %}>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m10 9 5 3-5 3z"/></svg>
+    <span>{{ s('videos') }}</span>
+  </a>
+</nav>
+
+<nav class="gallery-event-filters" aria-label="{{ s('filter_media') }}">
+  <a class="{{ 'selected' if not selected_event_id else '' }}" href="{{ url_for('gallery', kind=kind) }}">{{ s('all_events') }}</a>
+  {% for event_option in event_options %}
+  <a class="{{ 'selected' if selected_event_id==event_option.id else '' }}" href="{{ url_for('gallery', kind=kind, event=event_option.id) }}">{{ event_option.title }}</a>
+  {% endfor %}
+</nav>
+
+{% if items %}
+  {% if kind=='photo' %}
+  <section class="gallery-photo-grid" aria-label="{{ s('gallery_photos') }}">
+    {% for item in items %}
+    <button class="gallery-photo" type="button"
+      data-lightbox-src="{{ url_for('uploaded', name=item.filename_or_youtube_url) }}"
+      data-lightbox-alt="{{ item.caption or item.event_title }}"
+      aria-label="{{ item.caption or item.event_title }} · {{ s('view_large') }}">
+      <img src="{{ url_for('thumbnail', name=item.filename_or_youtube_url) }}" alt="{{ item.caption or item.event_title }}" loading="lazy">
+      <span class="gallery-photo-zoom" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5m-10.5-14v7m-3.5-3.5h7"/></svg>
+      </span>
+      <span class="gallery-photo-caption">{{ item.caption or item.event_title }}</span>
+    </button>
+    {% endfor %}
+  </section>
+  {% else %}
+  <section class="gallery-video-grid" aria-label="గ్రామ వీడియోలు">
+    {% for item in items %}
+    <article class="gallery-video-card">
+      <div class="gallery-video-frame">
+        {% if item.youtube_id %}
+        <div class="youtube-player" data-youtube-player>
+          <button class="youtube-load" type="button" data-youtube-id="{{ item.youtube_id }}"
+            data-video-title="{{ item.caption or item.event_title }}"
+            aria-label="{{ item.caption or item.event_title }} వీడియో చూడండి">
+            <svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="20"/><path d="m20 15 14 9-14 9z"/></svg>
+            <span>{{ s('watch_video') }}</span>
+          </button>
+        </div>
+        {% elif item.is_local_video %}
+        <video controls preload="none" playsinline aria-label="{{ item.caption or item.event_title }}">
+          <source src="{{ url_for('uploaded', name=item.filename_or_youtube_url) }}" type="{{ 'video/webm' if item.filename_or_youtube_url.lower().endswith('.webm') else 'video/mp4' }}">
+        </video>
+        {% else %}
+        <p class="empty-message">{{ s('video_unavailable') }}</p>
+        {% endif %}
+      </div>
+      <div class="gallery-video-copy">
+        <strong>{{ item.caption or item.event_title }}</strong>
+        <span>{{ item.event_title }}</span>
+      </div>
+    </article>
+    {% endfor %}
+  </section>
+  {% endif %}
+{% else %}
+<p class="empty-message">
+  {% if kind=='photo' %}{{ s('no_gallery_photos') }}{% else %}{{ s('no_gallery_videos') }}{% endif %}
+</p>
+{% endif %}
+
+{% if kind=='photo' %}
+<div id="image-lightbox" class="image-lightbox" hidden>
+  <button type="button" class="lightbox-close" aria-label="{{ s('close_photo') }}">{{ s('close_photo') }}</button>
+  <img alt="">
+</div>
+{% endif %}
+{% endblock %}

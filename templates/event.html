@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% block title %}{{ ev.title }} · {{ org }}{% endblock %}
+{% block og_title %}{{ ev.title }} · {{ org }}{% endblock %}
+{% block body %}
+<header class="event-detail-heading">
+  <p class="eyebrow">{{ ev.occasion or s('village_event') }}</p>
+  <h1>{{ ev.title }}</h1>
+  <p class="event-detail-meta">
+    <span>{{ ev.date }}</span>
+    {% if ev.place or ev.venue %}<span>{{ ev.place or ev.venue }}</span>{% endif %}
+  </p>
+  <p>{{ ev.description }}</p>
+  <div class="event-detail-actions">
+    <button class="large-button button-green" type="button"
+      data-share-url="{{ url_for('event', eid=ev.id, _external=True) }}"
+      data-share-text="{{ ev.title }}">{{ s('share_event') }}</button>
+    <a class="large-button button-outline" href="{{ url_for('event_calendar', eid=ev.id) }}">{{ s('add_calendar') }}</a>
+  </div>
+</header>
+
+<section class="event-detail-section" aria-labelledby="games-title">
+  <h2 id="games-title">{{ s('games_contests') }}</h2>
+  {% if games %}
+  <ul class="games-list">
+    {% for game in games %}
+    <li><span class="game-time">{{ game.time or s('time_soon') }}</span>
+      <div><h3>{{ game.name or game.title }}</h3>{% if game.details %}<p>{{ game.details }}</p>{% endif %}</div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="empty-message">{{ s('games_soon') }}</p>
+  {% endif %}
+</section>
+
+<section class="event-detail-section" aria-labelledby="contests-title">
+  <h2 id="contests-title">{{ s('voting_contests') }}</h2>
+  {% if contests %}
+  <div class="contest-card-list">
+    {% for contest in contests %}
+    <article class="event-contest-card">
+      <div class="contest-status-line">
+        <h3>{{ contest.title }}</h3>
+        <span class="contest-state state-{{ contest.state }}">
+          {% if contest.state=='published' %}{{ s('published') }}
+          {% elif contest.state=='scheduled' %}{{ s('not_started') }}
+          {% elif contest.state=='open' %}{{ s('voting_open') }}
+          {% else %}{{ s('voting_closed') }}{% endif %}
+        </span>
+      </div>
+      {% if contest.state=='scheduled' and contest.starts_at %}
+      <p class="note">{{ s('starts_at', time=vote_datetime_display(contest.starts_at)) }}</p>
+      {% endif %}
+      {% if contest.state=='open' and contest.closes_at %}
+      <p class="note">{{ s('ends_at', time=vote_datetime_display(contest.closes_at)) }}</p>
+      {% endif %}
+      <div class="event-detail-actions">
+        <a class="large-button button-green" href="{{ url_for('contest_short', cid=contest.id) }}">{{ s('go_vote') }}</a>
+        {% if contest.state=='published' %}
+        <a class="large-button button-outline" href="{{ url_for('contest_results', cid=contest.id) }}">{{ s('see_results') }}</a>
+        {% endif %}
+        <button class="large-button button-outline" type="button"
+          data-share-url="{{ url_for('contest_short', cid=contest.id, _external=True) }}"
+          data-share-text="{{ contest.title }}">{{ s('share_voting') }}</button>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="empty-message">{{ s('no_contests') }}</p>
+  {% endif %}
+</section>
+
+{% if is_past %}
+<section class="event-detail-section" aria-labelledby="winners-title">
+  <h2 id="winners-title">{{ s('winners') }}</h2>
+  {% if winners %}
+  <div class="winner-card-list">
+    {% for winner in winners %}
+    <article class="winner-card">
+      {% if winner.photo %}<img src="{{ url_for('thumbnail', name=winner.photo) }}" alt="{{ winner.name }}" loading="lazy">{% endif %}
+      <div><p class="section-kicker">{{ winner.category }}</p><h3>{{ winner.name }}</h3></div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="empty-message">{{ s('winner_details_soon') }}</p>
+  {% endif %}
+</section>
+
+<section class="event-detail-section" aria-labelledby="event-media-title">
+  <h2 id="event-media-title">{{ s('photos_videos') }}</h2>
+  {% if mem %}
+  <div class="event-media-grid">
+    {% for item in mem %}
+    <figure>
+      {% if item.media_type=='video' %}
+      <video controls preload="none" playsinline aria-label="{{ item.caption or ev.title }}">
+        <source src="{{ url_for('uploaded', name=item.filename) }}" type="{{ 'video/webm' if item.filename.endswith('.webm') else 'video/mp4' }}">
+      </video>
+      {% else %}
+      <button class="photo-view-trigger" type="button" data-lightbox-src="{{ url_for('uploaded', name=item.filename) }}" aria-label="ఫోటోను పెద్దగా చూడండి">
+        <img src="{{ url_for('thumbnail', name=item.filename) }}" alt="{{ item.caption or ev.title }}" loading="lazy">
+      </button>
+      {% endif %}
+      {% if item.caption %}<figcaption>{{ item.caption }}</figcaption>{% endif %}
+    </figure>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="empty-message">{{ s('memories_soon') }}</p>
+  {% endif %}
+</section>
+{% endif %}
+
+{% if ev.donation_qr or ev.donation_message %}
+<section class="event-detail-section">
+  <h2>ఈవెంట్‌కు సహాయం</h2>
+  {% if ev.donation_message %}<p>{{ ev.donation_message }}</p>{% endif %}
+  {% if ev.donation_qr %}<img class="donation-image" src="{{ url_for('uploaded', name=ev.donation_qr) }}" alt="విరాళం చెల్లింపు QR" loading="lazy">{% endif %}
+  <p class="note">డబ్బు పంపే ముందు చెల్లింపు వివరాలను పరిశీలించండి.</p>
+</section>
+{% endif %}
+
+{% if user and user.is_admin %}
+<section class="admin-event-tools">
+  <h2>Admin</h2>
+  <a class="large-button button-green" href="{{ url_for('event_form', eid=ev.id) }}">Edit event</a>
+  <form method="post" action="{{ url_for('add_memories', eid=ev.id) }}" enctype="multipart/form-data">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label>Photos or videos<input type="file" name="media" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm" multiple required></label>
+    <label>Caption (optional)<input name="caption"></label>
+    <button class="large-button button-green" type="submit">Upload media</button>
+  </form>
+  <form method="post" action="{{ url_for('add_youtube_media', eid=ev.id) }}">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label>YouTube video link<input type="url" name="youtube_url" maxlength="500" required></label>
+    <label>Caption<input name="caption" maxlength="300"></label>
+    <button class="large-button button-outline" type="submit">Add YouTube video</button>
+  </form>
+  <section class="admin-resource-list">
+    <h3>Manage event media</h3>
+    {% for item in media_items %}
+    <div class="admin-resource-row">
+      <form method="post" action="{{ url_for('edit_media', mid=item.id) }}">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <label>{{ item.kind|title }} caption<input name="caption" maxlength="300" value="{{ item.caption or '' }}"></label>
+        <button class="large-button button-outline" type="submit">Save caption</button>
+      </form>
+      <form method="post" action="{{ url_for('delete_media', mid=item.id) }}" data-confirm="Delete this photo or video?">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <button class="large-button button-outline" type="submit">Delete media</button>
+      </form>
+    </div>
+    {% else %}
+    <p class="empty-message">No media yet.</p>
+    {% endfor %}
+  </section>
+  <section class="admin-resource-list">
+    <h3>Manage winners</h3>
+    <form method="post" action="{{ url_for('add_winner', eid=ev.id) }}" enctype="multipart/form-data">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <label>Winner name<input name="name" maxlength="160" required></label>
+      <label>Category<input name="category" maxlength="120"></label>
+      <label>Photo (optional)<input type="file" name="photo" accept="image/jpeg,image/png,image/webp,image/gif"></label>
+      <button class="large-button button-green" type="submit">Add winner</button>
+    </form>
+    {% for winner in winners %}
+    <div class="admin-resource-row">
+      <form method="post" action="{{ url_for('edit_winner', eid=ev.id, wid=winner.id) }}" enctype="multipart/form-data">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <label>Name<input name="name" maxlength="160" value="{{ winner.name }}" required></label>
+        <label>Category<input name="category" maxlength="120" value="{{ winner.category }}"></label>
+        <label>Replace photo<input type="file" name="photo" accept="image/jpeg,image/png,image/webp,image/gif"></label>
+        {% if winner.photo %}<label class="chk"><input type="checkbox" name="remove_photo">Remove current photo</label>{% endif %}
+        <button class="large-button button-outline" type="submit">Save winner</button>
+      </form>
+      <form method="post" action="{{ url_for('delete_winner', eid=ev.id, wid=winner.id) }}" data-confirm="Delete this winner?">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <button class="large-button button-outline" type="submit">Delete winner</button>
+      </form>
+    </div>
+    {% else %}
+    <p class="empty-message">No winners have been added.</p>
+    {% endfor %}
+  </section>
+  <form method="post" action="{{ url_for('del_event', eid=ev.id) }}" data-confirm="ఈ ఈవెంట్ మరియు మీడియాను తొలగించాలా?">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <button class="large-button button-outline" type="submit">Delete event</button>
+  </form>
+</section>
+{% endif %}
+
+<div id="image-lightbox" class="image-lightbox" hidden>
+  <button type="button" class="lightbox-close" aria-label="ఫోటోను మూసివేయండి">మూసివేయండి</button>
+  <img alt="">
+</div>
+{% endblock %}

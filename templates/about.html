@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ s('goals') }} · {{ org }}{% endblock %}
+{% block body %}
+<header class="page-heading">
+  <p class="eyebrow">{{ s('goal_eyebrow') }}</p>
+  <h1>{{ s('goals') }}</h1>
+  <p>{{ s('goals_intro') }}</p>
+</header>
+
+<section class="goal-list" aria-label="{{ s('goal_list') }}">
+  <article class="goal-card">
+    <span class="goal-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="m5 21 19-15 19 15v20H5z"/><path d="M19 41V27h10v14M9 22h30M3 42h42"/></svg></span>
+    <div><h2>1. {{ s('goal1') }}</h2><p>{{ s('goal1_text') }}</p></div>
+  </article>
+  <article class="goal-card">
+    <span class="goal-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M8 40h32M12 38V17l12-8 12 8v21M18 22h12M18 28h12m-12 6h7"/><path d="M20 9V5h8v4"/></svg></span>
+    <div><h2>2. {{ s('goal2') }}</h2><p>{{ s('goal2_text') }}</p></div>
+  </article>
+  <article class="goal-card">
+    <span class="goal-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M24 42V24m0 7c-10 0-15-6-15-15 10 0 15 5 15 15Zm0-7c0-10 5-15 15-15 0 10-5 15-15 15Z"/><path d="M8 42h32"/></svg></span>
+    <div><h2>3. {{ s('goal3') }}</h2><p>{{ s('goal3_text') }}</p></div>
+  </article>
+  <article class="goal-card">
+    <span class="goal-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="m24 5 5 11 12 1-9 8 3 12-11-6-11 6 3-12-9-8 12-1z"/><path d="M24 31v12M16 43h16"/></svg></span>
+    <div><h2>4. {{ s('goal4') }}</h2><p>{{ s('goal4_text') }}</p></div>
+  </article>
+  <article class="goal-card">
+    <span class="goal-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><circle cx="21" cy="21" r="13"/><path d="m31 31 11 11M15 21h12m-6-6v12"/></svg></span>
+    <div><h2>5. {{ s('goal5') }}</h2><p>{{ s('goal5_text') }}</p></div>
+  </article>
+</section>
+{% endblock %}

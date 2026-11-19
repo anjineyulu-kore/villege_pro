@@ -1,0 +1,4 @@
+{% extends "base.html" %}{% block body %}
+<h1>🌳 {{ t('more_trees') }}</h1><div class="bigstat"><b>{{ total }}</b><span>{{ t('trees_total') }}</span></div>
+{% for r in rows %}<div class="card row"><h3>{{ r.qty }} 🌱</h3><span class="note">📅 {{ r.date }}{% if r.place %} · 📍 {{ r.place }}{% endif %}</span></div>{% else %}<p class="empty">—</p>{% endfor %}
+{% endblock %}

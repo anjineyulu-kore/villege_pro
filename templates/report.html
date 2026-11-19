@@ -1,0 +1,6 @@
+{% extends "base.html" %}{% block body %}
+<form method="post" enctype="multipart/form-data" class="card narrow"><h2>🛠️ {{ t('report_title') }}</h2><p class="note">{{ t('report_hint') }}</p><input type="hidden" name="csrf" value="{{ csrf }}">
+<label>{{ t('category') }}<select name="category">{% for c in REPORT_CATS %}<option value="{{ c }}">{{ t('rep_' ~ c) }}</option>{% endfor %}</select></label>
+<label>{{ t('details') }}<textarea name="text" rows="4" maxlength="1000" required></textarea></label>
+<label>{{ t('photo_opt') }}<input type="file" name="photo" accept="image/*"></label><button class="btn primary block">{{ t('submit') }}</button></form>
+{% endblock %}

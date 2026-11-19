@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}{{ org }} · {{ s('home') }}{% endblock %}
+{% block body %}
+<section class="home-welcome">
+  <p class="eyebrow">{{ s('tagline') }}</p>
+  <h1>{{ s('home_welcome') }}</h1>
+  <p>{{ s('home_intro') }}</p>
+</section>
+
+<section class="upcoming-events-section" aria-labelledby="upcoming-title">
+    <div class="section-icon" aria-hidden="true">
+      <svg viewBox="0 0 48 48"><rect x="7" y="10" width="34" height="31" rx="5"/><path d="M15 6v9m18-9v9M7 20h34m-25 8h7m-7 7h15"/></svg>
+    </div>
+    <div class="upcoming-section-copy">
+      <p class="section-kicker">{{ s('coming_event') }}</p>
+      <h2 id="upcoming-title">{{ s('upcoming_events') }}</h2>
+    </div>
+    {% if upcoming_events|length > 1 %}
+    <div class="carousel-controls">
+      <button class="carousel-arrow" type="button" data-scroll-target="upcoming-event-track" data-scroll-direction="-1" aria-label="{{ s('scroll_previous') }}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <button class="carousel-arrow" type="button" data-scroll-target="upcoming-event-track" data-scroll-direction="1" aria-label="{{ s('scroll_next') }}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+    </div>
+    {% endif %}
+    {% if upcoming_events %}
+    <div id="upcoming-event-track" class="upcoming-event-track">
+      {% for upcoming in upcoming_events %}
+      <article class="upcoming-card">
+        {% if upcoming.cover %}
+        <img class="upcoming-card-image" src="{{ url_for('thumbnail', name=upcoming.cover) }}" alt="" loading="lazy">
+        {% else %}
+        <div class="upcoming-card-image upcoming-card-placeholder" aria-hidden="true">
+          <svg viewBox="0 0 48 48"><rect x="7" y="10" width="34" height="31" rx="5"/><path d="M15 6v9m18-9v9M7 20h34m-25 8h7m-7 7h15"/></svg>
+        </div>
+        {% endif %}
+        <div class="upcoming-copy">
+          <p class="event-meta">{{ upcoming.date }}{% if upcoming.place or upcoming.venue %} · {{ upcoming.place or upcoming.venue }}{% endif %}</p>
+          <h3>{{ upcoming.title }}</h3>
+          <a class="large-button button-green" href="{{ url_for('event', eid=upcoming.id) }}">{{ s('details') }}</a>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="upcoming-empty">
+      <h3>{{ s('event_details_soon') }}</h3>
+      <p>{{ s('check_later') }}</p>
+      <a class="large-button button-green" href="{{ url_for('events') }}">{{ s('browse_events') }}</a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="updates-section" aria-labelledby="updates-title">
+  <div class="section-heading">
+    <span class="section-icon" aria-hidden="true">
+      <svg viewBox="0 0 48 48"><path d="M7 10h34v25H20l-9 7v-7H7z"/><path d="M14 19h20m-20 7h14"/></svg>
+    </span>
+    <h2 id="updates-title">{{ s('latest_news') }}</h2>
+  </div>
+  {% if updates %}
+  <ul class="updates-list">
+    {% for update in updates %}
+    <li><time>{{ update.display_date[:10] }}</time><p>{{ update.text }}</p></li>
+    {% endfor %}
+  </ul>
+  <a class="text-link" href="{{ url_for('updates') }}">{{ s('more_news') }}</a>
+  {% else %}
+  <p class="empty-message">{{ s('news_soon') }}</p>
+  {% endif %}
+</section>
+
+<section class="quick-actions" aria-label="{{ s('quick_actions') }}">
+  {% if open_contests %}
+  <a class="quick-card" href="{{ url_for('contest_short', cid=open_contests[0].id) }}">
+  {% else %}
+  <a class="quick-card" href="{{ url_for('contests') }}">
+  {% endif %}
+    <span class="quick-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M24 7v34m-14-17h28"/><circle cx="24" cy="24" r="18"/><path d="m18 18 12 12m0-12L18 30"/></svg></span>
+    <strong>{{ s('vote') }}</strong>
+  </a>
+  <a class="quick-card" href="{{ url_for('gallery') }}">
+    <span class="quick-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><rect x="6" y="7" width="36" height="34" rx="5"/><circle cx="17" cy="18" r="3"/><path d="m8 36 11-11 7 7 6-6 8 8"/></svg></span>
+    <strong>{{ s('photos') }}</strong>
+  </a>
+  <a class="quick-card" href="{{ whatsapp_group_link }}" target="_blank" rel="noopener">
+    <span class="quick-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M41 23a17 17 0 0 1-25 15L7 41l3-9A17 17 0 1 1 41 23Z"/><path d="M18 17c1 7 6 12 13 13l3-4-5-3-3 2-5-5 2-3-3-5z"/></svg></span>
+    <strong>{{ s('join_whatsapp') }}</strong>
+  </a>
+  <a class="quick-card" href="{{ url_for('about') }}">
+    <span class="quick-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="18"/><path d="M24 22v12m0-21h.02"/></svg></span>
+    <strong>{{ s('goals') }}</strong>
+  </a>
+</section>
+
+<section id="memories" class="home-photos" aria-labelledby="photos-title">
+  <div class="section-heading">
+    <span class="section-icon" aria-hidden="true">
+      <svg viewBox="0 0 48 48"><rect x="6" y="7" width="36" height="34" rx="5"/><circle cx="17" cy="18" r="3"/><path d="m8 36 11-11 7 7 6-6 8 8"/></svg>
+    </span>
+    <h2 id="photos-title">{{ s('village_photos') }}</h2>
+  </div>
+  {% if memories|length > 1 %}
+  <div class="carousel-controls">
+    <button class="carousel-arrow" type="button" data-scroll-target="home-photo-track" data-scroll-direction="-1" aria-label="{{ s('scroll_previous') }}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <button class="carousel-arrow" type="button" data-scroll-target="home-photo-track" data-scroll-direction="1" aria-label="{{ s('scroll_next') }}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+  </div>
+  {% endif %}
+  <div id="home-photo-track" class="home-photo-track">
+    {% if memories %}
+    {% for photo in memories %}
+    <a href="{{ url_for('event', eid=photo.event_id) }}" aria-label="{{ photo.caption or photo.title }}" title="{{ photo.caption or photo.title }}">
+      <img src="{{ url_for('thumbnail', name=photo.filename) }}" alt="{{ photo.caption or photo.title }}" loading="lazy">
+    </a>
+    {% endfor %}
+    {% else %}
+    <p class="empty-message">{{ s('photos_soon') }}</p>
+    {% endif %}
+  </div>
+  <a class="text-link" href="{{ url_for('gallery') }}">{{ s('all_photos_videos') }}</a>
+</section>
+{% endblock %}

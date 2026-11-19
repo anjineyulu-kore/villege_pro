@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1E6B3A">
+<meta name="description" content="{{ org }} — {{ s('tagline') }}.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="{{ org }}">
+<meta property="og:title" content="{% block og_title %}{{ org }}{% endblock %}">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192.png') }}">
+<title>{% block title %}{{ org }}{% endblock %}</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Telugu:wght@400;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}">
+</head>
+<body>
+<header class="village-header">
+  <a class="village-brand" href="{{ url_for('home') }}" aria-label="{{ org }} - {{ s('home') }}">
+    <svg class="village-logo" viewBox="0 0 64 64" aria-hidden="true">
+      <circle cx="32" cy="32" r="31" fill="#FBE3B8"/>
+      <path d="M12 32 32 15l20 17v18H12z" fill="#1E6B3A"/>
+      <path d="M26 50V37h12v13M21 31h22M32 16v-5M8 50h48" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
+      <circle cx="45" cy="19" r="5" fill="#F2A33A"/>
+    </svg>
+    <span class="village-brand-copy"><strong>{{ org }}</strong><small>{{ s('tagline') }}</small></span>
+  </a>
+  <nav class="desktop-nav" aria-label="ప్రధాన పేజీలు">
+    <a href="{{ url_for('home') }}">{{ s('home') }}</a>
+    <a href="{{ url_for('events') }}">{{ s('events') }}</a>
+    <a href="{{ url_for('gallery') }}">{{ s('photos') }}</a>
+    <a href="{{ url_for('contests') }}">{{ s('vote') }}</a>
+    <a href="{{ url_for('about') }}">{{ s('goals') }}</a>
+    <a href="{{ url_for('contact') }}">{{ s('contact') }}</a>
+    {% if user and user.is_admin %}<a class="admin-link" href="{{ url_for('admin_dashboard') }}">Admin</a>{% endif %}
+  </nav>
+  <nav class="language-switch" aria-label="Language">
+    <a href="{{ url_for('set_lang', code='en', next=request.full_path) }}"
+       class="{{ 'active' if lang=='en' else '' }}" {% if lang=='en' %}aria-current="true"{% endif %}>ENG</a>
+    <a href="{{ url_for('set_lang', code='te', next=request.full_path) }}"
+       class="{{ 'active' if lang=='te' else '' }}" {% if lang=='te' %}aria-current="true"{% endif %}>తెలుగు</a>
+  </nav>
+  {% if user %}
+  <form class="header-action" method="post" action="{{ url_for('logout') }}">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <button class="header-button" type="submit">{{ s('logout') }}</button>
+  </form>
+  {% elif request.endpoint in ('login', 'register') %}
+  <a class="header-button" href="{{ url_for('home') }}">{{ s('home') }}</a>
+  {% endif %}
+</header>
+
+<main class="page-main">
+  {% for message in get_flashed_messages() %}<p class="flash">{{ message }}</p>{% endfor %}
+  {% block body %}{% endblock %}
+</main>
+
+<footer class="village-footer">
+  © {{ year }} · {{ org }} · {{ s('footer') }}
+  <small class="keyboard-hint">{{ s('keyboard_hint') }}</small>
+  {% if not user %}<a class="footer-admin-link" href="{{ url_for('login') }}">{{ s('admin_login') }}</a>{% endif %}
+</footer>
+
+<nav class="bottom-nav" aria-label="ప్రధాన నావిగేషన్">
+  <a href="{{ url_for('home') }}" class="{{ 'active' if ep=='home' else '' }}">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>
+    <span>{{ s('home') }}</span>
+  </a>
+  <a href="{{ url_for('events') }}" class="{{ 'active' if ep in ('events','event') else '' }}">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 10h18m-13 4h3m-3 3h7"/></svg>
+    <span>{{ s('events') }}</span>
+  </a>
+  <a href="{{ url_for('gallery') }}" class="{{ 'active' if ep=='gallery' else '' }}">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+    <span>{{ s('photos') }}</span>
+  </a>
+  <a href="{{ url_for('contact') }}" class="{{ 'active' if ep=='contact' else '' }}">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 20l1.2-5.3A8.4 8.4 0 1 1 21 11.5Z"/><path d="M8 9c1 3 2 4 5 5"/></svg>
+    <span>{{ s('contact') }}</span>
+  </a>
+</nav>
+<script src="{{ url_for('static', filename='app.js') }}" defer></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

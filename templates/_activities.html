@@ -1,0 +1,9 @@
+<fieldset class="activity-picker">
+<legend>{{ t('event_activities') }}</legend><p class="note">{{ t('activities_hint') }}</p>
+<div class="activity-options">{% for activity in activity_options %}
+<label class="activity-option"><input type="checkbox" name="activities" value="{{ activity }}"
+{{ 'checked' if activity in selected_activities else '' }}>{{ t(ACTIVITY_LABELS[activity]) }}</label>
+{% endfor %}</div>
+<label>{{ t('activities_custom') }}<textarea name="activities_custom" rows="3" maxlength="2000"
+placeholder="{{ t('activities_custom') }}">{{ custom_activities }}</textarea></label>
+</fieldset>

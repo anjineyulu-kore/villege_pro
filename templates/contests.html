@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ s('voting_contests') }} · {{ org }}{% endblock %}
+{% block body %}
+<header class="page-heading">
+  <p class="eyebrow">{{ s('vote_matters') }}</p>
+  <h1>{{ s('voting_contests') }}</h1>
+</header>
+{% if user and user.is_admin %}<a class="large-button button-green" href="{{ url_for('contest_new') }}">{{ s('new_contest') }}</a>{% endif %}
+{% if rows %}
+<div class="contest-card-list">
+  {% for contest in rows %}
+  <article class="event-contest-card">
+    <div class="contest-status-line">
+      <h2>{{ contest.title }}</h2>
+      <span class="contest-state state-{{ contest.state }}">
+        {% if contest.state=='published' %}{{ s('published') }}
+        {% elif contest.state=='scheduled' %}{{ s('not_started') }}
+        {% elif contest.state=='open' %}{{ s('voting_open') }}
+        {% else %}{{ s('voting_closed') }}{% endif %}
+      </span>
+    </div>
+    <p>{{ s('photos_count', count=contest.n) }}</p>
+    {% if contest.state=='published' %}
+    <a class="large-button button-green" href="{{ url_for('contest_results', cid=contest.id) }}">{{ s('see_results') }}</a>
+    {% else %}
+    <a class="large-button button-green" href="{{ url_for('contest_short', cid=contest.id) }}">{{ s('view_contest') }}</a>
+    {% endif %}
+    {% if user and user.is_admin %}<a class="large-button button-outline" href="{{ url_for('contest_edit', cid=contest.id) }}">Edit contest</a>{% endif %}
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<p class="empty-message">{{ s('no_contest_list') }}</p>
+{% endif %}
+{% endblock %}

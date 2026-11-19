@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Admin dashboard · {{ org }}{% endblock %}
+{% block body %}
+<h1>Admin dashboard</h1>
+<div class="dash">
+  {% for label, n, ep in stats %}
+  <a class="dcard c{{ loop.index0 % 5 }}" href="{{ url_for(ep) }}"><b>{{ n }}</b><span>{{ label }}</span></a>
+  {% endfor %}
+</div>
+
+<section class="admin-dashboard-section">
+  <div class="phead">
+    <h2>Events</h2>
+    <a class="btn primary" href="{{ url_for('event_form') }}">Add event</a>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Event</th><th>Date</th><th>Status</th><th>Manage</th></tr></thead>
+      <tbody>
+      {% for event_row in event_rows %}
+      <tr>
+        <td>{{ event_row.title }}</td>
+        <td>{{ event_row.date }}</td>
+        <td>{{ event_row.status }}</td>
+        <td><a class="btn" href="{{ url_for('event', eid=event_row.id) }}">View / edit</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" class="empty">No events yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="admin-dashboard-section">
+  <div class="phead">
+    <h2>Contests and live votes</h2>
+    <a class="btn primary" href="{{ url_for('contest_new') }}">New contest</a>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>Contest</th><th>Status</th><th>Votes</th><th>Manage</th></tr></thead>
+      <tbody>
+      {% for contest_row in contest_rows %}
+      <tr>
+        <td>{{ contest_row.title }}</td>
+        <td>{{ 'published' if contest_row.results_published else contest_row.status }}</td>
+        <td>{{ contest_row.vote_count }}</td>
+        <td><a class="btn" href="{{ url_for('contest_short', cid=contest_row.id) }}">Open</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" class="empty">No contests yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="admin-dashboard-section">
+  <h2>Quick actions</h2>
+  <div class="actions big">
+    <a class="btn primary" href="{{ url_for('updates') }}">Post an update</a>
+    <a class="btn primary" href="{{ url_for('admin_proposals') }}">Review event proposals</a>
+    <a class="btn" href="{{ url_for('admin_trees') }}">Log trees</a>
+    <a class="btn" href="{{ url_for('admin_members') }}">Accounts and permissions</a>
+    <a class="btn" href="{{ url_for('admin_reports') }}">Problem reports</a>
+    <a class="btn" href="{{ url_for('admin_apps') }}">Applications</a>
+    <a class="btn" href="{{ url_for('change_password') }}">Change password</a>
+  </div>
+</section>
+{% endblock %}

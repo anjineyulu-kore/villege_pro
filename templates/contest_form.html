@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block body %}
+{% set selected_event=request.form.get('event_id', c.event_id if c else '') %}
+<form method="post" class="card narrow"><h2>{{ 'Edit contest' if c else 'Create voting contest' }}</h2><input type="hidden" name="csrf" value="{{ csrf }}">
+<label>Title<input name="title" maxlength="200" value="{{ request.form.get('title', c.title if c else '') }}" required></label><label>Details<textarea name="description" rows="3" maxlength="2000">{{ request.form.get('description', c.description if c else '') }}</textarea></label>
+<label>Linked event<select name="event_id"><option value="">None</option>{% for e in evs %}<option value="{{ e.id }}" {{ 'selected' if selected_event|string == (e.id|string) }}>{{ e.title }} ({{ e.date }})</option>{% endfor %}</select></label>
+{% if not c %}
+<label>{{ t('vote_starts_at') }} (local time, optional)<input type="datetime-local" name="starts_at" value="{{ request.form.get('starts_at','') }}"></label>
+<label>{{ t('vote_duration') }}<select name="duration_hours">{% for hours in vote_durations %}<option value="{{ hours }}" {{ 'selected' if request.form.get('duration_hours','24')|int==hours }}>{{ t('hours_label', hours=hours) }}</option>{% endfor %}</select></label>
+<p class="note">{{ t('vote_duration_from_start') }}</p>
+{% endif %}
+<button class="btn primary">{{ 'Save contest' if c else 'Create' }}</button></form>
+{% endblock %}

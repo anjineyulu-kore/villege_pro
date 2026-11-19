@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}{{ c.title }} · {{ s('see_results') }}{% endblock %}
+{% block body %}
+<header class="results-heading">
+  <p class="eyebrow">{{ s('vote_results_heading') }}</p>
+  <h1>{{ c.title }}</h1>
+  <p class="results-total">{{ s('votes_count', count=total) }}</p>
+  {% if admin and not c.results_published %}
+  <p class="results-preview">{{ s('admin_preview') }}</p>
+  {% endif %}
+</header>
+
+{% if winners %}
+<section class="winner-banner" aria-label="{{ s('winner') }}">
+  <span class="winner-mark" aria-hidden="true">
+    <svg viewBox="0 0 48 48"><path d="M13 7h22v11a11 11 0 0 1-22 0zM13 12H6v5a9 9 0 0 0 9 9m20-14h7v5a9 9 0 0 1-9 9M24 29v9m-9 4h18m-14-4h10"/></svg>
+  </span>
+  <div><p class="section-kicker">{{ s('winner') }}</p>
+    {% for winner in winners %}<strong>{{ s('contest_winner', number=winner.number) }}{% if winner.title %} · {{ winner.title }}{% endif %}</strong>{% endfor %}
+  </div>
+</section>
+{% else %}
+<p class="empty-message">{{ s('no_votes') }}</p>
+{% endif %}
+
+<section class="results-list" aria-label="{{ s('vote_details') }}">
+  {% for entry in entries %}
+  <article class="result-row">
+    <strong class="result-number">#{{ entry.number }}</strong>
+    <img src="{{ url_for('thumbnail', name=entry.filename) }}" alt="{{ entry.caption or entry.title or ('ముగ్గు ' ~ entry.number) }}" loading="lazy">
+    <div class="result-data">
+      {% if entry.caption or entry.title %}<p>{{ entry.caption or entry.title }}</p>{% endif %}
+      <div class="result-track" role="img" aria-label="{{ s('votes_count', count=entry.votes) }}">
+        <span style="width:{{ (entry.votes*100/(top or 1))|round|int }}%"></span>
+      </div>
+    </div>
+    <strong class="result-count">{{ entry.votes }}{% if winners and entry in winners %}<span class="trophy-mark" aria-label="{{ s('winner') }}"><svg viewBox="0 0 24 24"><path d="M6 3h12v6a6 6 0 0 1-12 0zM6 5H3v3a5 5 0 0 0 5 5m10-8h3v3a5 5 0 0 1-5 5m-4 0v5m-4 3h8m-6-3h4"/></svg></span>{% endif %}</strong>
+  </article>
+  {% endfor %}
+</section>
+
+{% if admin %}
+<section class="admin-voting-tools">
+  <h2>{{ s('admin') }}</h2>
+  {% if c.event_id and winners %}
+  <form method="post" action="{{ url_for('save_contest_winners', cid=c.id) }}">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <button class="large-button button-green" type="submit">{{ s('save_winners') }}</button>
+  </form>
+  {% elif not c.event_id %}
+  <p>{{ s('attach_contest') }}</p>
+  {% endif %}
+  <a class="large-button button-outline" href="{{ url_for('contest_short', cid=c.id) }}">{{ s('back_to_contest') }}</a>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% block body %}
+<h1 class="page-heading-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v12H9l-5 4z"/><path d="M8 9h8m-8 4h6"/></svg>{{ t('nav_updates') }}</h1>
+<div class="chips"><a class="chip {{ 'on' if not cat }}" href="{{ url_for('updates') }}">{{ t('all') }}</a>
+{% for c in CATS %}<a class="chip {{ 'on' if cat==c }}" href="{{ url_for('updates', cat=c) }}">{{ t('cat_' ~ c) }}</a>{% endfor %}</div>
+{% if user and user.is_admin %}{% set back = request.full_path %}{% include "_composer.html" %}{% set admin_ctrl = true %}{% endif %}
+<ul class="feed tall">{% for u in rows %}{% include "_update.html" %}{% else %}<li class="empty">{{ t('no_updates') }}</li>{% endfor %}</ul>
+{% endblock %}

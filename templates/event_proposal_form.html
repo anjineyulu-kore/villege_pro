@@ -1,0 +1,21 @@
+{% extends "base.html" %}{% block body %}
+<div class="form-intro"><span class="section-kicker">{{ t('event_suggest') }}</span><h1>{{ t('event_proposal') }}</h1><p>{{ t('proposal_intro') }}</p></div>
+<form method="post" class="card proposal-form" enctype="multipart/form-data">
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<div class="row2">
+<label>{{ t('event_name') }}<input name="title" maxlength="160" value="{{ request.form.get('title', '') }}" required></label>
+<label>{{ t('event_date') }}<input type="date" name="date" value="{{ request.form.get('date', '') }}" required></label>
+</div>
+<div class="row2">
+<label>{{ t('venue_label') }}<input name="venue" maxlength="200" value="{{ request.form.get('venue', '') }}"></label>
+<label>{{ t('category') }}<select name="category">{% for c in CATS %}<option value="{{ c }}" {{ 'selected' if request.form.get('category','general')==c }}>{{ t('cat_' ~ c) }}</option>{% endfor %}</select></label>
+</div>
+<label>{{ t('details') }}<textarea name="description" rows="4" maxlength="4000">{{ request.form.get('description', '') }}</textarea></label>
+{% include "_activities.html" %}
+<label>📷 {{ t('photos') }} / 🎬 {{ t('videos_n') }}
+<input type="file" name="media" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm" multiple>
+</label><p class="note">{{ t('f_bad_media') }}</p>
+<p class="note">{{ t('upload_limit') }}</p>
+<button class="btn primary">{{ t('submit') }}</button>
+</form>
+{% endblock %}

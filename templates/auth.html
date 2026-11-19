@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% block body %}
+<form method="post" class="card narrow"><h2>{{ t('register') if mode=='register' else t('login') }}</h2><input type="hidden" name="csrf" value="{{ csrf }}">
+{% if mode=='register' %}<label>{{ t('name') }}<input name="name" required></label>
+<label>{{ t('phone') }}<input name="phone" inputmode="numeric" required></label>
+{% else %}<label>{{ t('phone_or_user') }}<input name="phone" autocapitalize="none" autocomplete="username" required></label>{% endif %}
+<label>{{ t('password') }}<input name="password" type="password" minlength="6" autocomplete="{{ 'new-password' if mode=='register' else 'current-password' }}" required></label>
+{% if mode=='register' and need_code %}<label>{{ t('member_code') }}<input name="code" required></label>{% endif %}
+<button class="btn primary block">{{ t('register') if mode=='register' else t('login') }}</button>
+{% if mode=='register' %}<p class="note">{{ t('registration_view_only') }}</p>{% endif %}
+<p class="note">{% if mode=='login' %}<a href="{{ url_for('register') }}">{{ t('join') }}</a>{% else %}<a href="{{ url_for('login') }}">{{ t('login') }}</a>{% endif %}</p></form>
+{% endblock %}

@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% block body %}
+<h1>🗂️ {{ t('more_archive') }}</h1>
+{% for y, d in data %}<section class="card yearcard"><h2>{{ y }}</h2>
+<div class="stats small"><div><b>{{ d.events }}</b><span>{{ t('events_n') }}</span></div><div><b>{{ d.photos }}</b><span>{{ t('photos_n') }}</span></div><div><b>{{ d.trees }}</b><span>🌳 {{ t('trees_total') }}</span></div></div>
+{% if d.winners %}<h3>🏆 {{ t('winners') }}</h3><ul>{% for cid, title, ws in d.winners %}<li><a href="{{ url_for('contest', cid=cid) }}">{{ title }}</a>: <strong>{{ ws|join(', ') or '—' }}</strong></li>{% endfor %}</ul>{% endif %}
+</section>{% else %}<p class="empty">—</p>{% endfor %}
+{% endblock %}

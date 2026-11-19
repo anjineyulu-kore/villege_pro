@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% block body %}
+<section class="card narrow center"><div class="upload-error-icon" aria-hidden="true">
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 18-9 18 9v20l-18 9-18-9zM6 15l18 10 18-10M24 25v19M15 10l18 10"/></svg>
+</div>
+<h1>{{ t('upload_too_large') }}</h1><p class="note">{{ t('upload_limit') }}</p>
+<a class="btn primary" href="{{ url_for('home') }}">{{ t('nav_home') }}</a></section>
+{% endblock %}

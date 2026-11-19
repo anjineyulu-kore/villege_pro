@@ -1,0 +1,17 @@
+<li class="up cat-{{ u.category or 'general' }}{{ ' pin' if u.pinned }}">
+<div class="uh"><span class="badge cat-{{ u.category or 'general' }}">{{ t('cat_' ~ (u.category or 'general')) }}</span>
+{% if u.pinned %}<span class="pinlbl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 3 8 8-2 2-1 6-2 2-1-7-2-2 2-2zM5 19l-2 2"/></svg>{{ t('pinned') }}</span>{% endif %}<time data-t="{{ u.created }}">{{ u.created[:10] }}</time></div>
+<p>{{ u.text }}</p>
+{% if u.photo %}<img class="upimg" loading="lazy" src="{{ url_for('thumbnail', name=u.photo) }}" alt="">{% endif %}
+<a class="whatsapp-share" target="_blank" rel="noopener" href="{{ whatsapp_share_url(u.text[:180], 'updates') }}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 20l1.2-5.3A8.4 8.4 0 1 1 21 11.5Z"/><path d="M8 9c1 3 2 4 5 5"/></svg>{{ t('share_whatsapp') }}</a>
+{% if admin_ctrl and user and user.is_admin %}<div class="actions">
+<details class="update-edit"><summary>Edit update</summary>
+<form method="post" action="{{ url_for('edit_update', uid=u.id) }}" enctype="multipart/form-data">
+<input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="back" value="{{ back }}">
+<label>Text<textarea name="text" rows="3" maxlength="800" required>{{ u.text }}</textarea></label>
+<label>Category<select name="category">{% for category in CATS %}<option value="{{ category }}" {{ 'selected' if category==(u.category or 'general') }}>{{ t('cat_' ~ category) }}</option>{% endfor %}</select></label>
+<label>Replace photo<input type="file" name="photo" accept="image/jpeg,image/png,image/webp,image/gif"></label>
+{% if u.photo %}<label class="chk"><input type="checkbox" name="remove_photo">Remove current photo</label>{% endif %}
+<button class="btn primary" type="submit">Save changes</button></form></details>
+<form method="post" action="{{ url_for('pin_update', uid=u.id) }}"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="link">{{ 'Unpin' if u.pinned else 'Pin' }}</button></form>
+<form method="post" action="{{ url_for('del_update', uid=u.id) }}" data-confirm="Delete this update?"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="link danger">Delete</button></form></div>{% endif %}</li>

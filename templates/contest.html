@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% block title %}{{ c.title }} · {{ org }}{% endblock %}
+{% block body %}
+<header class="contest-heading">
+  <p class="eyebrow">{{ s('contest_zoom') }}</p>
+  <h1>{{ c.title }}</h1>
+  {% if c.description %}<p>{{ c.description }}</p>{% endif %}
+  <p class="contest-status state-{{ state }}">
+    {% if state=='scheduled' %}{{ s('not_started') }}
+    {% elif state=='open' %}{{ s('voting_open') }}
+    {% elif state=='published' %}{{ s('published') }}
+    {% else %}{{ s('voting_closed') }}{% endif %}
+  </p>
+</header>
+
+{% if state=='scheduled' and starts_at_display %}
+<p class="vote-banner">{{ s('starts_at', time=starts_at_display) }}</p>
+{% elif state=='open' and closes_at_display %}
+<p class="vote-banner">{{ s('ends_at', time=closes_at_display) }}</p>
+{% elif state=='closed' %}
+<p class="vote-banner">{{ s('voting_closed') }}</p>
+{% endif %}
+{% if state=='closed' and not c.results_published and not (user and user.is_admin) %}
+<p class="vote-banner">{{ s('voting_closed') }}. {{ s('results_soon') }}</p>
+{% endif %}
+{% if state=='published' or (user and user.is_admin and c.status!='open') %}
+<a class="large-button button-green" href="{{ url_for('contest_results', cid=c.id) }}">{{ s('see_results') }}</a>
+{% endif %}
+
+{% if already_voted %}
+<div class="vote-thanks">
+  <span class="thanks-icon" aria-hidden="true">
+    <svg viewBox="0 0 48 48"><path d="m9 25 10 10L39 14"/></svg>
+  </span>
+  <p>{{ s('vote_thanks', number=mine_number) }}</p>
+  <button class="large-button button-outline" type="button"
+    data-share-url="{{ url_for('contest_short', cid=c.id, _external=True) }}"
+    data-share-text="{{ c.title }}">{{ s('share_contest') }}</button>
+</div>
+{% endif %}
+
+<p class="vote-instruction">{{ s('contest_instruction') }}</p>
+{% if entries %}
+<form class="vote-form" method="post" action="{{ url_for('vote_selected', cid=c.id) }}"
+  {% if voting_open and not already_voted %}data-confirm="{{ s('vote_confirm') }}"{% endif %}>
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  {% if require_phone_for_vote and voting_open and not already_voted %}
+  <label class="vote-phone-field">{{ s('phone_vote_hint') }}
+    <input type="tel" name="phone" inputmode="numeric" autocomplete="tel" minlength="8" maxlength="20" required>
+  </label>
+  {% endif %}
+  <div class="vote-grid">
+    {% for entry in entries %}
+    <article class="vote-entry {{ 'vote-entry-selected' if mine==entry.id }}">
+      <button class="photo-view-trigger" type="button" data-lightbox-src="{{ url_for('uploaded', name=entry.filename) }}" aria-label="{{ s('photo_zoom', number=entry.number) }}">
+        <img src="{{ url_for('thumbnail', name=entry.filename) }}" alt="{{ entry.caption or entry.title or ('ముగ్గు ' ~ entry.number) }}" loading="lazy">
+      </button>
+      <span class="entry-number">{{ entry.number }}</span>
+      {% if entry.caption or entry.title %}<p class="entry-caption">{{ entry.caption or entry.title }}</p>{% endif %}
+      {% if voting_open and not already_voted %}
+      <label class="entry-choice" for="entry-{{ entry.id }}">
+        <input id="entry-{{ entry.id }}" type="radio" name="entry_id" value="{{ entry.id }}" required>
+        <span>{{ s('vote_entry', number=entry.number) }}</span>
+      </label>
+      {% elif mine==entry.id %}
+      <p class="entry-voted">{{ s('your_vote') }}</p>
+      {% endif %}
+    </article>
+    {% endfor %}
+  </div>
+  {% if voting_open and not already_voted %}
+  <button class="large-button button-green vote-submit" type="submit">{{ s('vote_submit') }}</button>
+  {% endif %}
+</form>
+{% else %}
+<p class="empty-message">{{ s('photos_coming') }}</p>
+{% endif %}
+
+{% if user and user.is_admin %}
+<section class="admin-voting-tools">
+  <h2>Admin</h2>
+  <a class="large-button button-outline" href="{{ url_for('contest_edit', cid=c.id) }}">Edit contest</a>
+  <form method="post" action="{{ url_for('add_entry', cid=c.id) }}" enctype="multipart/form-data">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label>Entry photos<input type="file" name="photos" accept="image/jpeg,image/png,image/webp,image/gif" multiple required></label>
+    <label>Name / caption<input name="title"></label>
+    <button class="large-button button-green" type="submit">Add entry</button>
+  </form>
+  {% if entries %}
+  <div class="admin-entry-list">
+    <h3>Manage entries</h3>
+    {% for entry in entries %}
+    <div class="admin-entry-row">
+      <form method="post" action="{{ url_for('edit_entry', eid=entry.id) }}" enctype="multipart/form-data">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <label>Entry #{{ entry.number }} name<input name="title" maxlength="200" value="{{ entry.caption or entry.title }}"></label>
+        <label>Replace photo (optional)<input type="file" name="photo" accept="image/jpeg,image/png,image/webp,image/gif"></label>
+        <button class="large-button button-outline" type="submit">Save entry</button>
+      </form>
+      <form method="post" action="{{ url_for('del_entry', eid=entry.id) }}" data-confirm="Delete this entry and its votes?">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <button class="large-button button-outline" type="submit">Delete entry</button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% if c.status=='open' %}
+  <form method="post" action="{{ url_for('set_contest_deadline', cid=c.id) }}">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label>{{ t('vote_duration') }}<select name="duration_hours">{% for hours in vote_durations %}<option value="{{ hours }}">{{ t('hours_label', hours=hours) }}</option>{% endfor %}</select></label>
+    <label>Custom duration (hours, 0.25–8760)<input type="number" name="custom_duration_hours" min="0.25" max="8760" step="0.25" inputmode="decimal" placeholder="e.g. 2.5"></label>
+    <button class="large-button button-outline" type="submit">{{ t('vote_set_deadline') }}</button>
+  </form>
+  <form method="post" action="{{ url_for('set_contest_schedule', cid=c.id) }}">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label>Starts (local time)<input type="datetime-local" name="starts_at" value="{{ starts_at_input }}"></label>
+    <label>Ends (local time)<input type="datetime-local" name="closes_at" value="{{ closes_at_input }}"></label>
+    <button class="large-button button-outline" type="submit">Save schedule</button>
+  </form>
+  <form method="post" action="{{ url_for('toggle', cid=c.id) }}">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <button class="large-button button-outline" type="submit">Close voting now</button>
+  </form>
+  {% else %}
+  <form method="post" action="{{ url_for('toggle', cid=c.id) }}">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label>{{ t('vote_duration') }}<select name="duration_hours">{% for hours in vote_durations %}<option value="{{ hours }}" {{ 'selected' if hours==24 }}>{{ t('hours_label', hours=hours) }}</option>{% endfor %}</select></label>
+    <label>Custom duration (hours, 0.25–8760)<input type="number" name="custom_duration_hours" min="0.25" max="8760" step="0.25" inputmode="decimal" placeholder="e.g. 2.5"></label>
+    <button class="large-button button-green" type="submit">Reopen voting</button>
+  </form>
+  {% if not c.results_published %}
+  <form method="post" action="{{ url_for('publish_contest_results', cid=c.id) }}">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <button class="large-button button-green" type="submit">Publish results</button>
+  </form>
+  {% endif %}
+  {% endif %}
+  {% if c.results_published or c.status=='published' %}
+  <form method="post" action="{{ url_for('unpublish_contest_results', cid=c.id) }}" data-confirm="Make these results private again?">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <button class="large-button button-outline" type="submit">Unpublish results</button>
+  </form>
+  {% endif %}
+  <form method="post" action="{{ url_for('reset_contest_votes', cid=c.id) }}"
+    data-confirm="Reset every vote and remove saved winners for this contest? This cannot be undone.">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <button class="large-button button-outline" type="submit">Reset votes</button>
+  </form>
+  <form method="post" action="{{ url_for('del_contest', cid=c.id) }}" data-confirm="ఈ పోటీని తొలగించాలా?">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <button class="large-button button-outline" type="submit">Delete contest</button>
+  </form>
+</section>
+{% endif %}
+
+<div id="image-lightbox" class="image-lightbox" hidden>
+  <button type="button" class="lightbox-close" aria-label="ఫోటోను మూసివేయండి">మూసివేయండి</button>
+  <img alt="">
+</div>
+{% endblock %}
